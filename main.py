@@ -4,13 +4,28 @@ from flask import request
 from flask import redirect
 from flask_cors import CORS
 import user_management as dbHandler
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_bcrypt import Bcrypt
 
+
+
+csrf = CSRFProtect()
 # Code snippet for logging a message
 # app.logger.critical("message")
 
 app = Flask(__name__)
+csrf.init_app(app)
 # Enable CORS to allow cross-origin requests (needed for CSRF demo in Codespaces)
 CORS(app)
+bcrypt = Bcrypt(app)
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 
 @app.route("/success.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
@@ -36,8 +51,9 @@ def signup():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+        hashed_password = bcrypt.generate_password_hash(password=password)
         DoB = request.form["dob"]
-        dbHandler.insertUser(username, password, DoB)
+        dbHandler.insertUser(username, hashed_password, DoB)
         return render_template("/index.html")
     else:
         return render_template("/signup.html")
@@ -45,6 +61,7 @@ def signup():
 
 @app.route("/index.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
 @app.route("/", methods=["POST", "GET"])
+@limiter.limit("5 per minute", override_defaults=True)
 def home():
     # Simple Dynamic menu
     if request.method == "GET" and request.args.get("url"):
