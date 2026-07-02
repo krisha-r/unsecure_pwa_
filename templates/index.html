@@ -3,28 +3,12 @@
 <form action="/" method="post" class="box">
   {{ form.csrf_token }}
   <div class="input__wrapper">
-    <input
-      type="text"
-      name="username"
-      id="username"
-      placeholder="Username"
-      class="input__field"
-      required
-    />
+    {{ form.username.label }} {{ form.username }}
   </div>
   <div class="input__wrapper">
-    <input
-      type="password"
-      name="password"
-      id="password"
-      placeholder="Password"
-      class="input__field"
-      required
-    />
+    {{ form.password.label }} {{ form.password }}
   </div>
-  <div class="input__wrapper">
-    <input type="submit" class="btn" value="Log In" />
-  </div>
+  {{form.submit }}
 </form>
 <!-- User message -->
 {% if msg %}

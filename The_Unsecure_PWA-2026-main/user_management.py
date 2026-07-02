@@ -52,7 +52,7 @@ def listFeedback():
     cur = con.cursor()
     data = cur.execute("SELECT * FROM feedback").fetchall()
     con.close()
-    f = open("templates/partials/success_feedback.html", "w")
+    f = open("The_Unsecure_PWA-2026-main/templates/partials/success_feedback.html", "w")
     for row in data:
         f.write("<p>\n")
         f.write(f"{row[1]}\n")
