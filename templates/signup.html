@@ -1,8 +1,16 @@
 {% extends 'layout.html' %} {% block content %}
 <h1>Signup Form</h1>
 <form action="/signup.html" method="POST" class="box">
-  {{ form.csrf_token }} {{ form.username.label }} {{ form.username }} {{
-  form.password.label }} {{ form.password }} {{ form.dob.label }} {{ form.dob }}
-  {{form.submit }}
+  {{ form.csrf_token }}
+  <div class="input__wrapper">
+    {{ form.username.label }} {{ form.username(class_="input__field") }}
+  </div>
+  <div class="input__wrapper">
+    {{ form.password.label }} {{form.password(class_="input__field") }}
+  </div>
+  <div class="input__wrapper">
+    {{ form.dob.label }} {{form.dob(class_="input__field") }}
+  </div>
+  {{form.submit(class_="btn")}}
 </form>
 {% endblock %}

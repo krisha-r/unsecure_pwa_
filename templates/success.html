@@ -1,15 +1,20 @@
 {% extends 'layout.html' %} {% block content %}
 <h1>Welcome {{ value }}!</h1>
-<form action="/success.html" method="POST" class="box">
+<form action="/success.html" method="post" class="box">
   {{ form.csrf_token }}
   <div class="input__wrapper">
-    {{ form.feedback.label }} {{ form.feedback }}
+    {{ form.feedback.label }} {{ form.feedback(class_="input__field") }}
   </div>
-  {{form.submit }}
+  {{form.submit(class_="btn") }}
 </form>
 
 <hr />
 <br />
 <h1>Others feedback</h1>
-<div>{% include "partials/success_feedback.html" %}</div>
+
+<div>
+  {%for i in feedback%}
+  <p>{{i}}</p>
+  {% endfor %}
+</div>
 {% endblock %}

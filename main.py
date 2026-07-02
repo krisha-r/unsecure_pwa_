@@ -1,7 +1,4 @@
-from flask import Flask
-from flask import render_template
-from flask import request
-from flask import redirect
+from flask import Flask, render_template, redirect, request, session
 from flask_cors import CORS
 import user_management as dbHandler
 from flask_wtf.csrf import CSRFProtect
@@ -13,6 +10,7 @@ from wtforms import StringField, SubmitField, PasswordField, DateField, TextArea
 import os
 from dotenv import load_dotenv
 from urllib.parse import urlparse, urljoin
+import html
 
 
 load_dotenv()
@@ -70,30 +68,27 @@ limiter = Limiter(
 def addFeedback():
     form = Feedback_Form()
     #if the request method if get and a url parameter is passed
-    if request.method == "GET" and request.args.get("url"):
-        #store the url parameter in the target variable
-        target = request.args.get("url")
-        #If the target is a safe url then redirect to target url
-        if target and is_safe_url(target):
+    target = request.args.get("url")    
+    if request.method == "GET" and target:
+        if is_safe_url(target):
             return redirect(target)
-        #Otherwise return invalid redirect url and an error
-        elif target:
-            return "Invalid redirect URL", 400
+        return "Invalid redirect URL", 400
     #If the form was a valid submission then
     if form.validate_on_submit():  
         #Then let the feedback equal to the input from the form
         feedback = form.feedback.data
+        safe_input = html.escape(feedback)
         #Use the dbHandler class function insertFeedback with a feedback parameter
-        dbHandler.insertFeedback(feedback)
-        #Use the dbHandler class to list the Feedback from where it's stored
-        dbHandler.listFeedback()
+        dbHandler.insertFeedback(safe_input)
+        #Use the dbHandler class to list the Feedback from where it's stored   
+        feedback_list = dbHandler.listFeedback()
         #Return the html page sucess, with the parameterers True and "Back"
-        return render_template("success.html", state=True, value="Back", form=form)
+        return render_template("success.html", state=True, value="Back", form=form, feedback=feedback_list)
     else:
         #If the POST method was not used, just use the dbHandle function listFeedback
-        dbHandler.listFeedback()
+        feedback_list = dbHandler.listFeedback()
         #Return the html page success
-        return render_template("success.html", state=True, value="Back", form=form)
+        return render_template("success.html", state=True, value="Back", form=form, feedback=feedback_list)
 
 #Create the signup page for the PWA, using the GET, POST, PUT, PATCH, DELETE methods
 @app.route("/signup.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
@@ -155,12 +150,12 @@ def home():
             #let the isLoggedIn variable be equal to the output of the retreieveUser function from the dbHandler, which has the username and password as parameters
             isLoggedIn = dbHandler.retrieveUsers(username, password)
             #If isLoggedIn is true
-            if isLoggedIn:
+            if isLoggedIn: 
                 #Use the dbHandler listFeedback function
-                dbHandler.listFeedback()
+                feedback_list = dbHandler.listFeedback()
                 #Return the success.html page, with the parameters username and the state of the isLoggedIn variable
                 form_feedback = Feedback_Form()
-                return render_template("success.html", value=username, state=isLoggedIn, form=form_feedback)
+                return render_template("success.html", value=username, state=isLoggedIn, form=form_feedback, feedback=feedback_list)
             else:
                 #If isLoggedIn is false then return the index.html 
                 return render_template("index.html", form=form)
@@ -171,4 +166,4 @@ def home():
 if __name__ == "__main__":
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=False, host="0.0.0.0", port=5000)
